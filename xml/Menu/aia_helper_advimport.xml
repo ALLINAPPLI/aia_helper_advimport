@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/debug-page</path>
+    <page_callback>CRM_AiaHelperAdvimport_Page_DebugPage</page_callback>
+    <title>DebugPage</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
