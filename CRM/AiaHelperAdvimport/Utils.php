@@ -3,26 +3,33 @@
   
   class CRM_AiaHelperAdvimport_Utils
   {
-    public static function getDataMembership($idMembershipId, $contactId, $priceSetId) {
-      $membership = \Civi\Api4\Membership::get(FALSE)
-        ->addSelect('*', 'custom.*', 'membership_type.*', 'financial_type.*','price_set.*')
-        ->addJoin('MembershipType AS membership_type', 'LEFT', ['membership_type_id', '=', 'membership_type.id'])
-        ->addJoin('PriceSet AS price_set', 'LEFT', ['price_set.financial_type_id', '=', 'membership_type.financial_type_id'])
-        ->addWhere('id', '=', $idMembershipId)
-        ->addWhere('contact_id', '=', $contactId)
-        ->addWhere('price_set.id', '=', $priceSetId)
+    public static function getTarif($id,$priceFieldValueId) {
+      $priceFieldValues = \Civi\Api4\PriceFieldValue::get(FALSE)
+        ->addSelect('membership_type_id.*', '*', 'custom.*', 'price_field_id.*', 'financial_type_id:name')
+        ->addWhere('price_field_id.price_set_id', '=', $id)
+        ->addWhere('price_field_id', '=', $priceFieldValueId)
         ->execute();
       
-      return $membership;
+      return $priceFieldValues;
     }
     
-    public static function getTarif($id,$totalAmount) {
-      $priceFieldValues = \Civi\Api4\PriceFieldValue::get(FALSE)
-        ->addSelect('price_field_id.*', '*', 'custom.*', 'membership_type_id.*')
-        ->addWhere('price_field_id.price_set_id', '=', $id)
-        ->addWhere('amount', '=', $totalAmount)
+    public static function getMembershipTypeId($membershipId) {
+      $membershipType = \Civi\Api4\Membership::get(FALSE)
+        ->addSelect('membership_type_id.id')
+        ->addWhere('id', '=', $membershipId)
         ->execute();
-      Civi::log()->debug('--- getTarif $priceFieldValues : ' . print_r($priceFieldValues,1));
-      return $priceFieldValues;
+      
+      return $membershipType[0]['membership_type_id.id'];
+    }
+    
+    public static function getMembershipDataForContact($contactId, $membershipId) {
+      $membershipData = \Civi\Api4\Membership::get(FALSE)
+        ->addSelect('*', 'custom.*', 'membership_type_id.*')
+        ->addWhere('id', '=', $membershipId)
+        ->addWhere('contact_id', '=', $contactId)
+        ->execute()
+        ->first();
+      
+      return $membershipData;
     }
   }

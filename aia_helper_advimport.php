@@ -38,6 +38,6 @@ function aia_helper_advimport_civicrm_enable(): void {
   {
     $helpers[] = [
       'class' => 'CRM_AiaHelperAdvimport_Advimport_AddContributionToMembership',
-      'label' => E::ts('Ajout de contribution sur des adhésions existantes'),
+      'label' => E::ts('Ajout de contribution sur des adhésions existantes - ASPAS'),
     ];
   }
