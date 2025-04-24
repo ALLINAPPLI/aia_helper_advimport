@@ -95,7 +95,7 @@
           $tarif = CRM_AiaHelperAdvimport_Utils::getTarif($params['price_set_id'],$params['price_field_value_id']);
           
           // récupération du membership_type_id de l'adhésion
-          if(!empty($params['membership_id'])) {
+          /*if(!empty($params['membership_id'])) {
             $membershipTypeId = CRM_AiaHelperAdvimport_Utils::getMembershipTypeId($params['membership_id']);
           }
           
@@ -103,7 +103,10 @@
           if(empty($membershipTypeId)) {
             $message = 'Adhésion avec membership_type_id vide ou null : numéro de l\'adhésion : ' . $params['membership_id'] . ' -- ' . $params['contact_id'];
             CRM_Advimport_Utils::logImportWarning($params, $message);
-          }
+          }*/
+          
+          // récupération du membership_type_id avec les informations du tarif
+          // $membership_type_id = $tarif[0]['membership_type_id.id'];
           
           // contrôle sur le moyen de paiement
           if(empty($params['payment_instrument_id'])) {
@@ -123,6 +126,14 @@
             $message = 'Date de fin obligatoire';
             CRM_Advimport_Utils::logImportWarning($params, $message);
           } else {
+            // Fix Excel dates
+            $fix_date_fields = ['end_date'];
+            foreach ($fix_date_fields as $f) {
+              if (!empty($params[$f]) && is_numeric($params[$f])) {
+                $params[$f] = $this->excelDateToISO($params[$f]);
+              }
+            }
+            
             $endDate = $params['end_date'];
           }
           
@@ -181,7 +192,7 @@
                     'is_override' => 0,
                     'end_date' => $endDate,
                     'status_override_end_date' => null,
-                    'membership_type_id' => $membershipTypeId,
+                    'membership_type_id' => $tarif[0]['membership_type_id.id'],
                     'contact_id' => $contact_id,
                   ],
                 ],
