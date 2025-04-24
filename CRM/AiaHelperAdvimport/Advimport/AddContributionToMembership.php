@@ -95,7 +95,9 @@
           $tarif = CRM_AiaHelperAdvimport_Utils::getTarif($params['price_set_id'],$params['price_field_value_id']);
           
           // récupération du membership_type_id de l'adhésion
-          $membershipTypeId = CRM_AiaHelperAdvimport_Utils::getMembershipTypeId($params['membership_id']);
+          if(!empty($params['membership_id'])) {
+            $membershipTypeId = CRM_AiaHelperAdvimport_Utils::getMembershipTypeId($params['membership_id']);
+          }
           
           // contrôle si le membership_type_id est null
           if(empty($membershipTypeId)) {

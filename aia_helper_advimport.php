@@ -38,6 +38,10 @@ function aia_helper_advimport_civicrm_enable(): void {
   {
     $helpers[] = [
       'class' => 'CRM_AiaHelperAdvimport_Advimport_AddContributionToMembership',
+<<<<<<< HEAD
       'label' => E::ts('Ajout de contribution sur des adhésions (existantes ou pas)'),
+=======
+      'label' => E::ts('Ajout de contribution sur des adhésions existantes - ALL IN APPLI'),
+>>>>>>> 6567ca30276d0e7e68b9f7b0bee710a91d7d074a
     ];
   }
