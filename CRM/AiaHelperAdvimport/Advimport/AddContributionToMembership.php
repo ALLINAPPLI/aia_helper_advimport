@@ -6,7 +6,7 @@
          * Returns a human-readable name for this helper.
          */
         public function getHelperLabel() {
-            return E::ts("Ajout de contribution sur des adhésions existantes - ASPAS");
+            return E::ts("Ajout de contribution sur des adhésions (existantes ou pas)");
         }
     
         /**
@@ -14,25 +14,57 @@
          */
         public function getMapping(&$form) {
             return [
-              'contact_id' => [
-                'label' => E::ts('Id. de contact'),
-                'field' => 'contact_id',
-              ],
-              'membership_id' => [
-                'label' => E::ts('Id. d’adhésion'),
-                'field' => 'membership_id',
+              'trxn_id' => [
+                'label' => E::ts('Référence paiement'),
+                'field' => 'trxn_id',
               ],
               'total_amount' => [
                 'label' => E::ts('Montant total'),
                 'field' => 'total_amount',
               ],
+              'receipt_date' => [
+                'label' => E::ts('Date du paiement'),
+                'field' => 'receipt_date',
+              ],
+              'contribution_status_id' => [
+                'label' => E::ts('Statut du paiement'),
+                'field' => 'contribution_status_id',
+              ],
+              'contact_id' => [
+                'label' => E::ts('Id. de contact'),
+                'field' => 'contact_id',
+              ],
+              'membership_id' => [
+                'label' => E::ts('Membership_id'),
+                'field' => 'membership_id',
+              ],
+              'campaign_id' => [
+                'label' => E::ts('Campagne'),
+                'field' => 'campaign_id',
+              ],
+              'membership_type_id' => [
+                'label' => E::ts('Type de membre'),
+                'field' => 'membership_type_id',
+              ],
               'financial_type_id' => [
                 'label' => E::ts('Type d\'opération comptable'),
                 'field' => 'financial_type_id',
               ],
-              'contribution_status_id' => [
-                'label' => E::ts('Statut de la contribution'),
-                'field' => 'contribution_status_id',
+              'frequence' => [
+                'label' => E::ts('Fréquence'),
+                'field' => 'frequence',
+              ],
+              'payment_instrument_id' => [
+                'label' => E::ts('Moyen de paiement'),
+                'field' => 'payment_instrument_id',
+              ],
+              'source' => [
+                'label' => E::ts('Source'),
+                'field' => 'source',
+              ],
+              'end_date' => [
+                'label' => E::ts('date de fin'),
+                'field' => 'end_date',
               ],
               'price_set_id' => [
                 'label' => E::ts('Price_set_id'),
@@ -41,10 +73,6 @@
               'price_field_value_id' => [
                 'label' => E::ts('Price_field_value'),
                 'field' => 'price_field_value_id',
-              ],
-              'end_date' => [
-                'label' => E::ts('date de fin'),
-                'field' => 'end_date',
               ],
             ];
         }
@@ -57,6 +85,7 @@
           $now = date('Y-m-d H:i:s');
           $contribution_id = NULL;
           $endDate = NULL;
+          $payment_instrument = null;
           $membershipData = CRM_AiaHelperAdvimport_Utils::getMembershipDataForContact($params['contact_id'],$params['membership_id']);
           
           // calcul de la date de fin de la nouvelle adhésion en prenant la date de fin de l'adhésion existante du contact en ajoutant + 1 année
@@ -72,6 +101,20 @@
           if(empty($membershipTypeId)) {
             $message = 'Adhésion avec membership_type_id vide ou null : numéro de l\'adhésion : ' . $params['membership_id'] . ' -- ' . $params['contact_id'];
             CRM_Advimport_Utils::logImportWarning($params, $message);
+          }
+          
+          // contrôle sur le moyen de paiement
+          if(empty($params['payment_instrument_id'])) {
+            $message = 'Moyen de paiement vide !';
+            CRM_Advimport_Utils::logImportWarning($params, $message);
+          } else {
+            $get_payment_instrument = CRM_AiaHelperAdvimport_Utils::getMoyenDePaiement(trim($params['payment_instrument_id']));
+            if(!empty($get_payment_instrument)) {
+              $payment_instrument = $get_payment_instrument;
+            } else {
+              $message = 'Correspondance avec le moyen de paiement en base de données impossible !';
+              CRM_Advimport_Utils::logImportWarning($params, $message);
+            }
           }
           
           if(empty($params['end_date'])) {
@@ -101,7 +144,7 @@
           
           // add contribution
           try {
-            $params = [
+            $paramsOrder = [
               'contact_id' => $contact_id,
               'receive_date' => $now,
               'financial_type_id' => $tarif[0]['financial_type_id:name'],
@@ -109,8 +152,10 @@
               'total_amount' => $params['total_amount'],
               //'check_number' => ,
               'is_pay_later' => false,
-              'payment_instrument_id' => 4, // chèque
-              'source' => 'Adhesion',
+              'trxn_id' => $params['trxn_id'],
+              'campaign_id' => $params['campaign_id'],
+              'payment_instrument_id' => $payment_instrument,
+              'source' => $params['source'],
               'line_items' => [
                 '0' => [
                   'line_item' => [
@@ -129,9 +174,8 @@
                     ],
                   ],
                   'params' => [
-                    'id' => $params['membership_id'],
                     'status_id' => 'Pending',
-                    'source' => 'Adhesion',
+                    'source' => $params['source'],
                     'is_override' => 0,
                     'end_date' => $endDate,
                     'status_override_end_date' => null,
@@ -142,7 +186,12 @@
               ],
             ];
             
-            $result = civicrm_api3('Order', 'create', $params);
+            // Ajout conditionnel de membership_id pour un renouvellement d'une adhésion
+            if(!empty($params['membership_id'])) {
+              $paramsOrder['line_items'][0]['params']['id'] = $params['membership_id'];
+            }
+            
+            $result = civicrm_api3('Order', 'create', $paramsOrder);
             $contribution_id = $result['id'];
             
           }

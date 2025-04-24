@@ -32,4 +32,17 @@
       
       return $membershipData;
     }
+    
+    public static function getMoyenDePaiement($label) {
+      $value = '';
+      $optionValues = \Civi\Api4\OptionValue::get(FALSE)
+        ->addSelect('*', 'custom.*')
+        ->addWhere('option_group_id', '=', 10) // moyen de paiement
+        ->addWhere('label', '=', $label)
+        ->execute()
+        ->first();
+      
+      $value = $optionValues['value'];
+      return $value;
+    }
   }
