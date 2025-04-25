@@ -134,7 +134,12 @@
               }
             }
             
-            $endDate = $params['end_date'];
+            $dateString = $params['end_date'];
+            $date = DateTime::createFromFormat('d/m/Y', $dateString);
+            // Reformate la date au format souhaité
+            $formattedDate = $date->format('Y-m-d');
+            Civi::log()->debug('--- end_date : ' . print_r($params['end_date'],1));
+            $endDate = $formattedDate;
           }
           
           // contrôle si l'identifiant de contact est présent en base
