@@ -22,9 +22,9 @@
                 'label' => E::ts('Montant total'),
                 'field' => 'total_amount',
               ],
-              'receipt_date' => [
+              'trxn_date' => [
                 'label' => E::ts('Date du paiement'),
-                'field' => 'receipt_date',
+                'field' => 'trxn_date',
               ],
               'contribution_status_id' => [
                 'label' => E::ts('Statut du paiement'),
@@ -59,7 +59,7 @@
                 'field' => 'payment_instrument_id',
               ],
               'source' => [
-                'label' => E::ts('Source'),
+                'label' => E::ts('Origine'),
                 'field' => 'source',
               ],
               'end_date' => [
@@ -84,6 +84,7 @@
           $contact_id = null;
           $now = date('Y-m-d H:i:s');
           $contribution_id = NULL;
+          $trxnDate = NULL;
           $endDate = NULL;
           $payment_instrument = null;
           $membershipData = CRM_AiaHelperAdvimport_Utils::getMembershipDataForContact($params['contact_id'],$params['membership_id']);
@@ -122,25 +123,8 @@
             }
           }
           
-          if(empty($params['end_date'])) {
-            $message = 'Date de fin obligatoire';
-            CRM_Advimport_Utils::logImportWarning($params, $message);
-          } else {
-            // Fix Excel dates
-            $fix_date_fields = ['end_date'];
-            foreach ($fix_date_fields as $f) {
-              if (!empty($params[$f]) && is_numeric($params[$f])) {
-                $params[$f] = $this->excelDateToISO($params[$f]);
-              }
-            }
-            
-            $dateString = $params['end_date'];
-            $date = DateTime::createFromFormat('d/m/Y', $dateString);
-            // Reformate la date au format souhaité
-            $formattedDate = $date->format('Y-m-d');
-            Civi::log()->debug('--- end_date : ' . print_r($params['end_date'],1));
-            $endDate = $formattedDate;
-          }
+          $endDate = CRM_AiaHelperAdvimport_Utils::transformDateFormatCivicrm($params['end_date'], $params);
+          $trxnDate = CRM_AiaHelperAdvimport_Utils::transformDateFormatCivicrm($params['trxn_date'], $params);
           
           // contrôle si l'identifiant de contact est présent en base
           // on retourne une erreur
@@ -222,7 +206,7 @@
             $payment = civicrm_api3('Payment', 'create', [
               'contribution_id' => $contribution_id,
               'total_amount' => $params['total_amount'],
-              'trxn_date' => $now,
+              'trxn_date' => $trxnDate,
               // 'check_number' => $checkNumber
             ]);
           } catch (Exception $e) {

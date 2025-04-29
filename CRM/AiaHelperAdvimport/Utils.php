@@ -45,4 +45,19 @@
       $value = $optionValues['value'];
       return $value;
     }
+    
+    public static function transformDateFormatCivicrm($dataDateFile, $params) {
+      $formattedDate = NULL;
+      if(empty($dataDateFile)) {
+        $message = 'Date obligatoire : ' . $dataDateFile;
+        CRM_Advimport_Utils::logImportWarning($params, $message);
+      } else {
+        $dateString = $dataDateFile;
+        $date = DateTime::createFromFormat('d/m/Y', $dateString);
+        // Reformate la date au format souhaité
+        $formattedDate = $date->format('Y-m-d');
+      }
+      
+      return $formattedDate;
+    }
   }
