@@ -146,14 +146,14 @@
           
           // traitement sur la receive_date
           if (!empty($params['receive_date'])) {
-            Civi::log()->debug('--- receive date avt formatage : ' . print_r($params['receive_date'],1));
+            // Civi::log()->debug('--- receive date avt formatage : ' . print_r($params['receive_date'],1));
             $receive_date = CRM_AiaHelperAdvimport_Utils::transformDateFormatCivicrm($params['receive_date'], $params);
-            Civi::log()->debug('--- receive date aps formatage : ' . print_r($receive_date,1));
+            // Civi::log()->debug('--- receive date aps formatage : ' . print_r($receive_date,1));
           } else {
             $receive_date = $now;
           }
           
-          Civi::log()->debug('--- receive date aps traitement : ' . print_r($receive_date,1));
+          // Civi::log()->debug('--- receive date aps traitement : ' . print_r($receive_date,1));
           
           // requête API 4
           // https://civicrm.aspas-nature.org/civicrm/api4#/explorer/Membership/get?select=%5B%22membership_type_id.id%22%5D&where=%5B%5B%22id%22,%22%3D%22,%224803%22%5D%5D&limit=0&checkPermissions=0&debug=0
