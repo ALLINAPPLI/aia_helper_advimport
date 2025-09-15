@@ -52,10 +52,28 @@
         $message = 'Date obligatoire : ' . $dataDateFile;
         CRM_Advimport_Utils::logImportWarning($params, $message);
       } else {
+        
         $dateString = $dataDateFile;
-        $date = DateTime::createFromFormat('d/m/Y', $dateString);
-        // Reformate la date au format souhaité
-        $formattedDate = $date->format('Y-m-d');
+        // Vérifier si c'est un format français (d/m/Y)
+        $dateFrancais = DateTime::createFromFormat('d/m/Y', $dateString);
+        
+        // Vérifier si c'est un format anglais (m/d/Y)
+        $dateAnglais = DateTime::createFromFormat('Y-m-d', $dateString);
+        
+        // Civi::log()->debug('--- $dateFrançais : ' . print_r($dateFrancais,1));
+        // Civi::log()->debug('--- $dateAnglais : ' . print_r($dateAnglais,1));
+        
+        // Si c'est un format anglais valide
+        if ($dateAnglais !== false) {
+          // C'est un format anglais, on le garde tel quel (au format Y-m-d pour CiviCRM)
+          $formattedDate = $dateAnglais->format('Y-m-d');
+        }
+        // Si c'est un format français valide
+        else if ($dateFrancais !== false) {
+          // C'est un format français, on le convertit
+          $formattedDate = $dateFrancais->format('Y-m-d');
+        }
+        
       }
       
       return $formattedDate;

@@ -92,7 +92,6 @@
           $endDate = NULL;
           $payment_instrument = null;
           $membershipData = CRM_AiaHelperAdvimport_Utils::getMembershipDataForContact($params['contact_id'],$params['membership_id']);
-          $receive_date = null;
           
           // calcul de la date de fin de la nouvelle adhésion en prenant la date de fin de l'adhésion existante du contact en ajoutant + 1 année
           // $endDate = date("Y-m-d", strtotime(date("Y-m-d", strtotime($membershipData['end_date'])) . " + " . $membershipData['membership_type_id.duration_interval'] . " " . $membershipData['membership_type_id.duration_unit']));
@@ -147,14 +146,25 @@
           
           // traitement sur la receive_date
           if (!empty($params['receive_date'])) {
+            Civi::log()->debug('--- receive date avt formatage : ' . print_r($params['receive_date'],1));
             $receive_date = CRM_AiaHelperAdvimport_Utils::transformDateFormatCivicrm($params['receive_date'], $params);
+            Civi::log()->debug('--- receive date aps formatage : ' . print_r($receive_date,1));
           } else {
             $receive_date = $now;
           }
           
+          Civi::log()->debug('--- receive date aps traitement : ' . print_r($receive_date,1));
+          
           // requête API 4
           // https://civicrm.aspas-nature.org/civicrm/api4#/explorer/Membership/get?select=%5B%22membership_type_id.id%22%5D&where=%5B%5B%22id%22,%22%3D%22,%224803%22%5D%5D&limit=0&checkPermissions=0&debug=0
           // https://civicrm.aspas-nature.org/civicrm/api4#/explorer/PriceFieldValue/get?select=%5B%22membership_type_id.*%22,%22*%22,%22custom.*%22,%22price_field_id.*%22,%22financial_type_id:name%22%5D&limit=0&where=%5B%5B%22price_field_id.price_set_id%22,%22%3D%22,%2221%22%5D,%5B%22price_field_id%22,%22%3D%22,%2258%22%5D%5D
+          
+          // Affichage d'une erreur quand la receive_date après traitement est vide
+          if(empty($receive_date)) {
+            $message = 'Date de reçu vide ou non valide ! : vérifier le format de date saisi dans la matrice (Y-m-d ou d/m/Y)';
+            CRM_Advimport_Utils::logImportWarning($params, $message);
+            return;
+          }
           
           // add contribution
           try {
@@ -199,6 +209,8 @@
                 ],
               ],
             ];
+            
+            // Civi::log()->debug('--- $paramsOrder : ' . print_r($paramsOrder,1));
             
             // Ajout conditionnel de membership_id pour un renouvellement d'une adhésion
             if(!empty($params['membership_id'])) {
