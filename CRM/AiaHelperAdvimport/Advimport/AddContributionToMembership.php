@@ -15,67 +15,67 @@
         public function getMapping(&$form) {
             return [
               'trxn_id' => [
-                'label' => E::ts('Référence paiement'),
+                'label' => 'Référence paiement',
                 'field' => 'trxn_id',
               ],
               'total_amount' => [
-                'label' => E::ts('Montant total'),
+                'label' => 'Montant total',
                 'field' => 'total_amount',
               ],
               'trxn_date' => [
-                'label' => E::ts('Date du paiement'),
+                'label' => 'Date du paiement',
                 'field' => 'trxn_date',
               ],
               'receive_date' => [
-                'label' => E::ts('Date enregistrement paiement'),
+                'label' => 'Date enregistrement paiement',
                 'field' => 'receive_date',
               ],
               'contribution_status_id' => [
-                'label' => E::ts('Statut du paiement'),
+                'label' => 'Statut du paiement',
                 'field' => 'contribution_status_id',
               ],
               'contact_id' => [
-                'label' => E::ts('Id. de contact'),
+                'label' => 'Id. de contact',
                 'field' => 'contact_id',
               ],
               'membership_id' => [
-                'label' => E::ts('Membership_id'),
+                'label' => 'Membership_id',
                 'field' => 'membership_id',
               ],
               'campaign_id' => [
-                'label' => E::ts('Campagne'),
+                'label' => 'Campagne',
                 'field' => 'campaign_id',
               ],
               'membership_type_id' => [
-                'label' => E::ts('Type de membre'),
+                'label' => 'Type de membre',
                 'field' => 'membership_type_id',
               ],
               'financial_type_id' => [
-                'label' => E::ts('Type d\'opération comptable'),
+                'label' => 'Type d\'opération comptable',
                 'field' => 'financial_type_id',
               ],
               'frequence' => [
-                'label' => E::ts('Fréquence'),
+                'label' => 'Fréquence',
                 'field' => 'frequence',
               ],
               'payment_instrument_id' => [
-                'label' => E::ts('Moyen de paiement'),
+                'label' => 'Moyen de paiement',
                 'field' => 'payment_instrument_id',
               ],
               'source' => [
-                'label' => E::ts('Origine'),
+                'label' => 'Origine',
                 'field' => 'source',
               ],
               'end_date' => [
-                'label' => E::ts('date de fin'),
+                'label' => 'date de fin',
                 'field' => 'end_date',
               ],
               'price_set_id' => [
-                'label' => E::ts('Price_set_id'),
+                'label' => 'Price_set_id',
                 'field' => 'price_set_id',
               ],
               'price_field_value_id' => [
-                'label' => E::ts('Price_field_value'),
+                'label' => 'Price_field_value',
                 'field' => 'price_field_value_id',
               ],
             ];
@@ -97,7 +97,7 @@
           // $endDate = date("Y-m-d", strtotime(date("Y-m-d", strtotime($membershipData['end_date'])) . " + " . $membershipData['membership_type_id.duration_interval'] . " " . $membershipData['membership_type_id.duration_unit']));
           
           // récupération du tarif selon le price_set_id et l'identifiant du champ tarif
-          $tarif = CRM_AiaHelperAdvimport_Utils::getTarif($params['price_set_id'],$params['price_field_value']);
+          $tarif = CRM_AiaHelperAdvimport_Utils::getTarif($params['price_set_id'],$params['price_field_value_id']);
           
           // Civi::log()->debug('--- $params[price_set_id] : ' . print_r($params['price_set_id'],1));
           // Civi::log()->debug('--- $params[price_field_value_id] : ' . print_r($params['price_field_value'],1));
@@ -133,7 +133,6 @@
           }
           
           $endDate = CRM_AiaHelperAdvimport_Utils::transformDateFormatCivicrm($params['end_date'], $params);
-          $trxnDate = CRM_AiaHelperAdvimport_Utils::transformDateFormatCivicrm($params['trxn_date'], $params);
           
           // contrôle si l'identifiant de contact est présent en base
           // on retourne une erreur
@@ -210,13 +209,23 @@
                     'status_override_end_date' => null,
                     'membership_type_id' => $tarif[0]['membership_type_id.id'],
                     'contact_id' => $contact_id,
-                    'join_date' => $trxnDate
                   ],
                 ],
               ],
             ];
             
             // Civi::log()->debug('--- $paramsOrder : ' . print_r($paramsOrder,1));
+            
+            // Ajout conditionnel de join_date uniquement si trxn_date est rempli
+            if(!empty($params['trxn_date'])) {
+              $trxnDate = CRM_AiaHelperAdvimport_Utils::transformDateFormatCivicrm($params['trxn_date'], $params);
+              $paramsOrder['line_items'][0]['params']['join_date'] = $trxnDate;
+            } else {
+              $paramsOrder['line_items'][0]['params']['join_date'] = $now;
+              
+              // assignation de cette variable pour le paiement (ligne 243)
+              $trxnDate = $now;
+            }
             
             // Ajout conditionnel de membership_id pour un renouvellement d'une adhésion
             if(!empty($params['membership_id'])) {
