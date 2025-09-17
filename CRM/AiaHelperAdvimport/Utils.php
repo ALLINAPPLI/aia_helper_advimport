@@ -48,6 +48,9 @@
     
     public static function transformDateFormatCivicrm($dataDateFile, $params) {
       $formattedDate = NULL;
+      
+      // Civi::log()->debug('--- transformDateFormatCivicrm $dataDateFile : ' . print_r($dataDateFile,1));
+      
       if(empty($dataDateFile)) {
         $message = 'Date obligatoire : ' . $dataDateFile;
         CRM_Advimport_Utils::logImportWarning($params, $message);

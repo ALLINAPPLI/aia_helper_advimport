@@ -97,7 +97,12 @@
           // $endDate = date("Y-m-d", strtotime(date("Y-m-d", strtotime($membershipData['end_date'])) . " + " . $membershipData['membership_type_id.duration_interval'] . " " . $membershipData['membership_type_id.duration_unit']));
           
           // récupération du tarif selon le price_set_id et l'identifiant du champ tarif
-          $tarif = CRM_AiaHelperAdvimport_Utils::getTarif($params['price_set_id'],$params['price_field_value_id']);
+          $tarif = CRM_AiaHelperAdvimport_Utils::getTarif($params['price_set_id'],$params['price_field_value']);
+          
+          // Civi::log()->debug('--- $params[price_set_id] : ' . print_r($params['price_set_id'],1));
+          // Civi::log()->debug('--- $params[price_field_value_id] : ' . print_r($params['price_field_value'],1));
+          // Civi::log()->debug('--- $tarif : ' . print_r($tarif,1));
+          // Civi::log()->debug('--- $params : ' . print_r($params,1));
           
           // récupération du membership_type_id de l'adhésion
           /*if(!empty($params['membership_id'])) {
@@ -205,6 +210,7 @@
                     'status_override_end_date' => null,
                     'membership_type_id' => $tarif[0]['membership_type_id.id'],
                     'contact_id' => $contact_id,
+                    'join_date' => $trxnDate
                   ],
                 ],
               ],
