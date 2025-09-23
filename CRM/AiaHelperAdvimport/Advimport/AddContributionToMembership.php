@@ -38,6 +38,14 @@
                 'label' => 'Id. de contact',
                 'field' => 'contact_id',
               ],
+              'filleul_contact_id' => [
+                'label' => 'Parrainage',
+                'field' => 'filleul_contact_id',
+              ],
+              'soft_credit_type_id' => [
+                'label' => 'Type credit indirect id',
+                'field' => 'soft_credit_type_id',
+              ],
               'membership_id' => [
                 'label' => 'Membership_id',
                 'field' => 'membership_id',
@@ -170,6 +178,12 @@
             return;
           }
           
+          // dans le cas d'un soft credit
+          // récupérer l'identifiant de contact parrain
+          // ajouter cet identifiant dans l'order api
+          // suite à ça récupérer l'identifiant du filleul et l'identifiant de la contribution
+          // faire un create sur la contribution soft
+          
           // add contribution
           try {
             $paramsOrder = [
@@ -233,7 +247,30 @@
             }
             
             $result = civicrm_api3('Order', 'create', $paramsOrder);
+            
+            // log result order api
+            // Civi::log()->debug('--- $result order api : ' . print_r($result,1));
+            
             $contribution_id = $result['id'];
+            $resultMembershipId = $result['values'][$contribution_id]['line_item'][0]['entity_id'];
+            
+            // log membership id
+            Civi::log()->debug('--- $resultMembershipId : ' . print_r($resultMembershipId,1));
+            
+            if(!empty($params['filleul_contact_id'])) {
+              $updateMembershipFilleul = \Civi\Api4\Membership::update(FALSE)
+                ->addValue('contact_id', $params['filleul_contact_id'])
+                ->addWhere('id', '=', $resultMembershipId)
+                ->execute();
+              
+              $results = \Civi\Api4\ContributionSoft::create(FALSE)
+                ->addValue('contribution_id', $contribution_id)
+                ->addValue('contact_id', $params['filleul_contact_id'])
+                ->addValue('amount', $params['total_amount'])
+                ->addValue('soft_credit_type_id', $params['soft_credit_type_id'])
+                ->addValue('currency', 'EUR')
+                ->execute();
+            }
             
           }
           catch (Exception $e) {
