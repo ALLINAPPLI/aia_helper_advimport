@@ -5,7 +5,7 @@ This is an [extension for CiviCRM](https://docs.civicrm.org/sysadmin/en/latest/c
 
 ## Documentation
 
-A l'activation de cette extension, celle ci ajoute dans le paramétrage de l'import une nouvelle option dans le select : _Ajout de contribution sur des adhésions (existantes ou pas)_
+À l'activation de cette extension, celle-ci ajoute dans le paramétrage de l'import une nouvelle option dans le select : _Ajout de contribution sur des adhésions (existantes ou pas)_
 
 Pour le bon fonctionnement de cette extension, il est nécessaire de respecter le mapping présent dans le code pour les labels dans le fichier csv. Le mapping se trouve dans la classe `AddContributionToMembership.php` méthode `getMapping(&$form)`
 
@@ -13,7 +13,7 @@ Le label du tableau doit correspondre parfaitement au label des colonnes du fich
 
 ### Fonctionnement
 
-Cette extension utiliser l'[order API](https://docs.civicrm.org/dev/en/latest/financial/orderAPI/) de civicrm. Cette api permet de créer une contribution et une adhésion.
+Cette extension utilise l'[order API](https://docs.civicrm.org/dev/en/latest/financial/orderAPI/) de civicrm. Cette api permet de créer une contribution et une adhésion.
 
 On utilise trois dates lors du traitement : 
 
@@ -24,7 +24,7 @@ On utilise trois dates lors du traitement :
 La date `trxn_date` est utilisée pour la date de paiement dans l'entité `Payment` et aussi pour le `join_date` dans l'entité `Membership`
 si celle ci est vide alors on utilise la date du jour du traitement d'import pour renseigner ces deux valeurs.
 
-On a la même logique pour la `receive_date` pour la contribution. Si celle ci est vide on renseigne la date du jour dans l'entité.
+On retrouve la même logique pour la `receive_date` pour la contribution. Si celle ci est vide on renseigne la date du jour dans l'entité.
 
 ### Formatage de date
 
