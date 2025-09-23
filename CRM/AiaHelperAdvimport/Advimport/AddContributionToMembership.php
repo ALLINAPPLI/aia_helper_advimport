@@ -178,12 +178,6 @@
             return;
           }
           
-          // dans le cas d'un soft credit
-          // récupérer l'identifiant de contact parrain
-          // ajouter cet identifiant dans l'order api
-          // suite à ça récupérer l'identifiant du filleul et l'identifiant de la contribution
-          // faire un create sur la contribution soft
-          
           // add contribution
           try {
             $paramsOrder = [
@@ -257,12 +251,17 @@
             // log membership id
             Civi::log()->debug('--- $resultMembershipId : ' . print_r($resultMembershipId,1));
             
+            // si il y a un parrainage disponible alors on fait un contribution soft credit
             if(!empty($params['filleul_contact_id'])) {
+              
+              // dans le cas d'une contribution soft credit on mets à jour l'adhésion
+              // avec le contact id du filleul
               $updateMembershipFilleul = \Civi\Api4\Membership::update(FALSE)
                 ->addValue('contact_id', $params['filleul_contact_id'])
                 ->addWhere('id', '=', $resultMembershipId)
                 ->execute();
               
+              // on créé un soft credit avec le contact id du filleul et le montant total de la contribution
               $results = \Civi\Api4\ContributionSoft::create(FALSE)
                 ->addValue('contribution_id', $contribution_id)
                 ->addValue('contact_id', $params['filleul_contact_id'])

@@ -32,6 +32,12 @@ Une fonction est mise à disposition pour le formatage de date de la matrice csv
 
 Une vérification est faîtes sur ce format présent dans la matrice csv. On contrôle si le format est français `d/m/Y` ou anglais `Y-m-d`. Dans tous les cas on formatte toujours la date au format anglais `Y-m-d`
 
+### Crédit indirect
+
+Dans le cas du crédit indirect, on récupère l'identifiant de l'adhésion pour ensuite assigner l'adhésion préalablement créée avec le contact id du filleul
+
+On créé également un enregistrement dans l'entité `ContributionSoft`
+
 ## Requis
 
 Extension [ADVimport](https://lab.civicrm.org/extensions/advimport)
