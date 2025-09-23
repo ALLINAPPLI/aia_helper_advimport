@@ -156,6 +156,13 @@
             
           }
           
+          // contrôle de la présence du soft_credit_type_id dans la matrice
+          // si vide on retourne une erreur
+          if (empty($params['soft_credit_type_id'])) {
+            $message = 'Le type de credit indirect est vide !';
+            CRM_Advimport_Utils::logImportWarning($params, $message);
+          }
+          
           // traitement sur la receive_date
           if (!empty($params['receive_date'])) {
             // Civi::log()->debug('--- receive date avt formatage : ' . print_r($params['receive_date'],1));
@@ -249,12 +256,13 @@
             $resultMembershipId = $result['values'][$contribution_id]['line_item'][0]['entity_id'];
             
             // log membership id
-            Civi::log()->debug('--- $resultMembershipId : ' . print_r($resultMembershipId,1));
+            // Civi::log()->debug('--- $resultMembershipId : ' . print_r($resultMembershipId,1));
             
             // si il y a un parrainage disponible alors on fait un contribution soft credit
             if(!empty($params['filleul_contact_id'])) {
               
               // dans le cas d'une contribution soft credit on mets à jour l'adhésion
+              // cette adhésion a été créé avec l'order api précédemment
               // avec le contact id du filleul
               $updateMembershipFilleul = \Civi\Api4\Membership::update(FALSE)
                 ->addValue('contact_id', $params['filleul_contact_id'])
