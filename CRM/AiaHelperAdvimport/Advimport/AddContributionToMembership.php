@@ -99,7 +99,7 @@
           $trxnDate = NULL;
           $endDate = NULL;
           $payment_instrument = null;
-          $membershipData = CRM_AiaHelperAdvimport_Utils::getMembershipDataForContact($params['contact_id'],$params['membership_id']);
+          // $membershipData = CRM_AiaHelperAdvimport_Utils::getMembershipDataForContact($params['contact_id'],$params['membership_id']);
           
           // calcul de la date de fin de la nouvelle adhésion en prenant la date de fin de l'adhésion existante du contact en ajoutant + 1 année
           // $endDate = date("Y-m-d", strtotime(date("Y-m-d", strtotime($membershipData['end_date'])) . " + " . $membershipData['membership_type_id.duration_interval'] . " " . $membershipData['membership_type_id.duration_unit']));
@@ -254,6 +254,18 @@
             
             $contribution_id = $result['id'];
             $resultMembershipId = $result['values'][$contribution_id]['line_item'][0]['entity_id'];
+
+            // traitement de la fréquence
+            if(!empty($params['frequence']) && $contribution_id) {
+              Civi::log()->debug("--- FREQUENCE : ".print_r($params['frequence'] ,1));
+
+              $results = \Civi\Api4\Contribution::update(FALSE)
+                ->addWhere('id', '=', $contribution_id)
+                ->addValue('Frequence.Fr_quence_Don', $params['frequence'])
+                ->execute();
+
+              Civi::log()->debug("--- UPDATE FREQUENCE : ".print_r($results ,1));
+            }
             
             // log membership id
             // Civi::log()->debug('--- $resultMembershipId : ' . print_r($resultMembershipId,1));
