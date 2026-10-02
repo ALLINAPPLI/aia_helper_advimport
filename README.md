@@ -38,6 +38,37 @@ Dans le cas du crédit indirect, on récupère l'identifiant de l'adhésion pour
 
 On créé également un enregistrement dans l'entité `ContributionSoft`
 
+### Adhésion existante
+
+Si la colonne `membership_id` est remplie, sa valeur est passée à `line_items[0]['params']['id']`. L'Order API met alors à jour cette adhésion au lieu d'en créer une.
+
+L'adhésion doit déjà exister dans la base cible, avec ce même identifiant, et appartenir au `contact_id` de la ligne. Le contact propriétaire ne doit pas être supprimé. Un identifiant issu d'un autre environnement (production vers sandbox, par exemple) ne correspond pas.
+
+### Identifiants de tarif
+
+La colonne CSV `price_field_value_id` est lue comme un identifiant de champ de prix (`price_field_id`), pas comme un identifiant d'option. `getTarif()` filtre avec `price_set_id` et `price_field_id`.
+
+Les valeurs envoyées à l'Order API sont ensuite celles-ci :
+
+- `price_field_id` reçoit `price_field_id.price_set_id` (l'ensemble de prix)
+- `price_field_value_id` reçoit `price_field_id.id` (le champ de prix)
+
+L'option de tarif réellement utilisée est `$tarif[0]['id']`. Le type d'adhésion vient de `$tarif[0]['membership_type_id.id']`.
+
+### Fréquence
+
+Après la création de la contribution par l'Order API, si la colonne `Fréquence` est remplie, sa valeur est écrite sur la contribution créée.
+
+La mise à jour passe par l'API4 `Contribution.update`, sur le champ personnalisé `Frequence.Fr_quence_Don`. Elle ne s'exécute que si l'Order API a renvoyé un `contribution_id`.
+
+La valeur du CSV est enregistrée telle quelle. Elle doit correspondre à une option valide de ce champ.
+
+### Dépannage
+
+- **Symptôme** : `Failed with order API: Expected one Membership but found 0`
+  - **Cause probable** : `membership_id` est renseigné, et l'API Membership ne renvoie aucune ligne pour cet identifiant (absent de la base, autre contact, contact supprimé, ou adhésion de test).
+  - **Contrôle** : `Membership.get` avec `id` égal à la valeur de la ligne, puis la même requête avec `contact_id`.
+
 ## Requis
 
 Extension [ADVimport](https://lab.civicrm.org/extensions/advimport)

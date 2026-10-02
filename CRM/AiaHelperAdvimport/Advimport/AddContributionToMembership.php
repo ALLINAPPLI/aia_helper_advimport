@@ -257,14 +257,14 @@
 
             // traitement de la fréquence
             if(!empty($params['frequence']) && $contribution_id) {
-              Civi::log()->debug("--- FREQUENCE : ".print_r($params['frequence'] ,1));
+              //Civi::log()->debug("--- FREQUENCE : ".print_r($params['frequence'] ,1));
 
               $results = \Civi\Api4\Contribution::update(FALSE)
                 ->addWhere('id', '=', $contribution_id)
                 ->addValue('Frequence.Fr_quence_Don', $params['frequence'])
                 ->execute();
 
-              Civi::log()->debug("--- UPDATE FREQUENCE : ".print_r($results ,1));
+              //Civi::log()->debug("--- UPDATE FREQUENCE : ".print_r($results ,1));
             }
             
             // log membership id
